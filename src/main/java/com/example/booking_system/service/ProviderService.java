@@ -17,10 +17,12 @@ public class ProviderService {
 
     private final ProviderMapper providerMapper;
     private final UserMapper userMapper;
+    private final NotificationService notificationService;
 
-    public ProviderService(ProviderMapper providerMapper, UserMapper userMapper) {
+    public ProviderService(ProviderMapper providerMapper, UserMapper userMapper, NotificationService notificationService) {
         this.providerMapper = providerMapper;
         this.userMapper = userMapper;
+        this.notificationService = notificationService;
     }
 
     public Map<String, Object> register(Integer userId, String companyName, String category) {
@@ -39,8 +41,8 @@ public class ProviderService {
         provider.setStatus(0);
         providerMapper.insert(provider);
 
-        user.setRole("PROVIDER");
-        userMapper.updateById(user);
+        notificationService.sendToAdmins("新的商户注册申请", 
+            "用户 " + user.getUsername() + " 申请成为商户，商家名称：" + companyName + "，分类：" + category);
 
         Map<String, Object> result = new HashMap<>();
         result.put("providerId", provider.getProviderId());
@@ -94,6 +96,14 @@ public class ProviderService {
         if (provider == null) throw new RuntimeException("服务商不存在");
         provider.setStatus(status);
         providerMapper.updateById(provider);
+        
+        if (status == 1) {
+            User user = userMapper.selectById(provider.getUserId());
+            if (user != null) {
+                user.setRole("PROVIDER");
+                userMapper.updateById(user);
+            }
+        }
     }
 
     public void delete(Integer providerId) {

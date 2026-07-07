@@ -9,16 +9,17 @@ const router = useRouter()
 const store = useUserStore()
 const form = ref({ companyName: '', category: '' })
 const loading = ref(false)
+const submitted = ref(false)
 
 async function submit() {
   if (!store.userId) return router.push('/login')
   loading.value = true
   try {
     await providerApi.register({ userId: store.userId, ...form.value })
-    ElMessage.success('服务商注册成功')
-    router.push('/provider/dashboard')
+    ElMessage.success('提交成功，等待管理员审核')
+    submitted.value = true
   } catch (e: any) {
-    ElMessage.error(e.response?.data?.msg || '注册失败')
+    ElMessage.error(e.response?.data?.msg || '提交失败')
   } finally {
     loading.value = false
   }
@@ -28,8 +29,17 @@ async function submit() {
 <template>
   <div style="display: flex; justify-content: center; padding-top: 60px">
     <el-card style="width: 500px">
-      <template #header><h2 style="text-align: center; margin: 0">注册为服务商</h2></template>
-      <el-form :model="form" label-width="100px">
+      <template #header><h2 style="text-align: center; margin: 0">申请成为商户</h2></template>
+      
+      <div v-if="submitted">
+        <el-result icon="success" title="申请已提交" sub-title="请等待管理员审核，审核通过后即可成为商户">
+          <template #extra>
+            <el-button type="primary" @click="router.push('/services')">返回首页</el-button>
+          </template>
+        </el-result>
+      </div>
+      
+      <el-form v-else :model="form" label-width="100px">
         <el-form-item label="商家名称">
           <el-input v-model="form.companyName" placeholder="如：阳光健身中心" />
         </el-form-item>
@@ -43,7 +53,7 @@ async function submit() {
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" :loading="loading" @click="submit" style="width: 100%">提交审核</el-button>
+          <el-button type="primary" :loading="loading" @click="submit" style="width: 100%">提交审核申请</el-button>
         </el-form-item>
       </el-form>
     </el-card>

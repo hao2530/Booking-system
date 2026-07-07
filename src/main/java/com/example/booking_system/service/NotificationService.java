@@ -2,7 +2,9 @@ package com.example.booking_system.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.booking_system.entity.Notification;
+import com.example.booking_system.entity.User;
 import com.example.booking_system.mapper.NotificationMapper;
+import com.example.booking_system.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -14,9 +16,11 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
     private final NotificationMapper notificationMapper;
+    private final UserMapper userMapper;
 
-    public NotificationService(NotificationMapper notificationMapper) {
+    public NotificationService(NotificationMapper notificationMapper, UserMapper userMapper) {
         this.notificationMapper = notificationMapper;
+        this.userMapper = userMapper;
     }
 
     public void send(Integer userId, String title, String body) {
@@ -27,6 +31,13 @@ public class NotificationService {
         n.setIsRead(0);
         notificationMapper.insert(n);
         System.out.println("[通知] 用户" + userId + " — " + title + ": " + body);
+    }
+
+    public void sendToAdmins(String title, String body) {
+        List<User> admins = userMapper.selectList(new LambdaQueryWrapper<User>().eq(User::getRole, "ADMIN"));
+        for (User admin : admins) {
+            send(admin.getUserId(), title, body);
+        }
     }
 
     public List<Map<String, Object>> getMyNotifications(Integer userId) {
