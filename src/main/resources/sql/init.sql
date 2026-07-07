@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS biz_notification;
 DROP TABLE IF EXISTS biz_review;
 DROP TABLE IF EXISTS biz_order;
 DROP TABLE IF EXISTS biz_schedule_slot;
@@ -65,4 +66,14 @@ CREATE TABLE biz_review (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES sys_user(user_id),
     FOREIGN KEY (order_id) REFERENCES biz_order(order_id)
+);
+
+CREATE TABLE biz_notification (
+    notification_id INT  AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT  NOT NULL,
+    title           VARCHAR(100) NOT NULL,
+    body            TEXT,
+    is_read         INT  DEFAULT 0,
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES sys_user(user_id)
 );

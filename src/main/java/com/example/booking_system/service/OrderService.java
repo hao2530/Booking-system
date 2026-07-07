@@ -21,12 +21,14 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final ScheduleSlotMapper slotMapper;
     private final ServiceMapper serviceMapper;
+    private final NotificationService notificationService;
 
     public OrderService(OrderMapper orderMapper, ScheduleSlotMapper slotMapper,
-                        ServiceMapper serviceMapper) {
+                        ServiceMapper serviceMapper, NotificationService notificationService) {
         this.orderMapper = orderMapper;
         this.slotMapper = slotMapper;
         this.serviceMapper = serviceMapper;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -62,6 +64,10 @@ public class OrderService {
         result.put("orderId", order.getOrderId());
         result.put("status", order.getStatus());
         result.put("totalAmount", order.getTotalAmount());
+
+        String dateStr = slot.getSlotDate() + " " + slot.getStartTime();
+        notificationService.send(userId, "预约成功",
+                "您已成功预约「" + service.getTitle() + "」— " + dateStr);
         return result;
     }
 
@@ -87,6 +93,9 @@ public class OrderService {
             slot.setIsAvailable(1);
             slotMapper.updateById(slot);
         }
+
+        notificationService.send(order.getUserId(), "预约已取消",
+                "您的预约（订单#" + orderId + "）已成功取消");
     }
 
     public List<Map<String, Object>> getUserBookings(Integer userId) {
