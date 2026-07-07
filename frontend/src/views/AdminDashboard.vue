@@ -39,6 +39,15 @@ async function deleteSlot(id: number) {
   } catch { /* canceled */ }
 }
 
+async function deleteProvider(id: number) {
+  try {
+    await ElMessageBox.confirm('确定删除该商户？此操作不可撤销。', '警告', { type: 'warning' })
+    await adminApi.deleteProvider(id)
+    ElMessage.success('已删除')
+    loadProviders()
+  } catch { /* canceled */ }
+}
+
 onMounted(() => {
   loadProviders()
   loadSlots()
@@ -62,12 +71,13 @@ onMounted(() => {
               <el-tag :type="statusType[row.status] || 'info'">{{ statusMap[row.status] || '未知' }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="200">
+          <el-table-column label="操作" width="280">
             <template #default="{ row }">
               <el-button v-if="row.status === 0" type="success" size="small" @click="audit(row.providerId, 1)">通过</el-button>
               <el-button v-if="row.status === 0" type="danger" size="small" @click="audit(row.providerId, 2)">拒绝</el-button>
               <el-tag v-if="row.status === 1" type="success">已审核</el-tag>
               <el-tag v-if="row.status === 2" type="danger">已拒绝</el-tag>
+              <el-button type="danger" size="small" style="margin-left: 8px" @click="deleteProvider(row.providerId)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>

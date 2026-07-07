@@ -95,4 +95,15 @@ public class ProviderService {
         provider.setStatus(status);
         providerMapper.updateById(provider);
     }
+
+    public void delete(Integer providerId) {
+        Provider provider = providerMapper.selectById(providerId);
+        if (provider == null) throw new RuntimeException("服务商不存在");
+        providerMapper.deleteById(providerId);
+        User user = userMapper.selectById(provider.getUserId());
+        if (user != null) {
+            user.setRole("USER");
+            userMapper.updateById(user);
+        }
+    }
 }

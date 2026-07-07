@@ -23,9 +23,15 @@ public class UserService {
         this.jwtUtil = jwtUtil;
     }
 
-    public Map<String, Object> register(String username, String password, String phone, String role, String adminKey) {
+    public Map<String, Object> register(String username, String password, String phone, String email, String role, String adminKey) {
         if (userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username)) != null) {
             throw new RuntimeException("用户名已存在");
+        }
+        if (email != null && !email.isEmpty() && userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getEmail, email)) != null) {
+            throw new RuntimeException("邮箱已被注册");
+        }
+        if (phone != null && !phone.isEmpty() && userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone)) != null) {
+            throw new RuntimeException("手机号已被注册");
         }
         if (role == null || role.isEmpty()) role = "USER";
         if ("ADMIN".equals(role) && !adminSecretKey.equals(adminKey)) {
@@ -35,6 +41,7 @@ public class UserService {
         user.setUsername(username);
         user.setPassword(encoder.encode(password));
         user.setPhone(phone);
+        user.setEmail(email);
         user.setRole(role);
         userMapper.insert(user);
         String token = jwtUtil.generateToken(user.getUserId(), user.getRole());
@@ -42,11 +49,16 @@ public class UserService {
         result.put("token", token);
         result.put("userId", user.getUserId());
         result.put("username", user.getUsername());
+        result.put("role", user.getRole());
         return result;
     }
 
-    public Map<String, Object> login(String username, String password) {
-        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+    public Map<String, Object> login(String username, String password, String role) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>().eq(User::getUsername, username);
+        if (role != null && !role.isEmpty()) {
+            wrapper.eq(User::getRole, role);
+        }
+        User user = userMapper.selectOne(wrapper);
         if (user == null || !encoder.matches(password, user.getPassword())) {
             throw new RuntimeException("用户名或密码错误");
         }

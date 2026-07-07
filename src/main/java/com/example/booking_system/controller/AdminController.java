@@ -56,4 +56,10 @@ public class AdminController {
         slotMapper.deleteById(id);
         return R.ok();
     }
+
+    @DeleteMapping("/providers/{id}")
+    public R<Void> deleteProvider(@PathVariable Integer id) {
+        providerService.delete(id);
+        return R.ok();
+    }
 }
