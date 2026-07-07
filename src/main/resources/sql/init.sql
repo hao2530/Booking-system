@@ -77,3 +77,19 @@ CREATE TABLE biz_notification (
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES sys_user(user_id)
 );
+
+CREATE TABLE biz_audit_log (
+    log_id      INT          AUTO_INCREMENT PRIMARY KEY,
+    operator_id INT          NOT NULL,
+    action      VARCHAR(100) NOT NULL,
+    target_type VARCHAR(50),
+    target_id   INT,
+    old_value   TEXT,
+    new_value   TEXT,
+    status      VARCHAR(20)  DEFAULT 'APPROVED',
+    remark      VARCHAR(255),
+    reviewer_id INT,
+    created_at  DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    reviewed_at DATETIME,
+    FOREIGN KEY (operator_id) REFERENCES sys_user(user_id)
+);

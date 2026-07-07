@@ -58,3 +58,8 @@ export const notificationApi = {
   my: (userId: number) => api.get('/notifications/my', { params: { userId } }),
   markRead: (id: number) => api.put(`/notifications/${id}/read`),
 }
+
+export const auditApi = {
+  list: (params: any) => api.get('/audit/list', { params }),
+  review: (data: any) => api.post('/audit/review', data),
+}
