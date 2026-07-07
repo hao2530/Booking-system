@@ -78,7 +78,7 @@ public class ServiceService {
         }).collect(Collectors.toList());
     }
 
-    public Map<String, Object> search(String keyword, String category, Integer page, Integer size) {
+    public Map<String, Object> search(String keyword, String category, String sort, Integer page, Integer size) {
         LambdaQueryWrapper<com.example.booking_system.entity.Service> wrapper = new LambdaQueryWrapper<>();
         if (keyword != null && !keyword.isEmpty()) {
             wrapper.like(com.example.booking_system.entity.Service::getTitle, keyword);
@@ -86,6 +86,17 @@ public class ServiceService {
         if (category != null && !category.isEmpty()) {
             wrapper.eq(com.example.booking_system.entity.Service::getCategory, category);
         }
+        
+        if (sort != null && !sort.isEmpty()) {
+            if ("price_asc".equals(sort)) {
+                wrapper.orderByAsc(com.example.booking_system.entity.Service::getPrice);
+            } else if ("price_desc".equals(sort)) {
+                wrapper.orderByDesc(com.example.booking_system.entity.Service::getPrice);
+            } else if ("rating_desc".equals(sort)) {
+                wrapper.orderByDesc(com.example.booking_system.entity.Service::getProviderId);
+            }
+        }
+        
         Page<com.example.booking_system.entity.Service> p =
                 serviceMapper.selectPage(new Page<>(page, size), wrapper);
 

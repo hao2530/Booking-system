@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { orderApi, reviewApi } from '../api'
+import { orderApi, reviewApi, slotApi } from '../api'
 import { useUserStore } from '../stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -12,6 +12,9 @@ const loading = ref(false)
 
 const dialogVisible = ref(false)
 const reviewForm = ref({ orderId: 0, rating: 5, comment: '' })
+
+const modifyDialogVisible = ref(false)
+const modifyForm = ref({ orderId: 0, serviceId: 0, date: '', slots: [] as any[], selectedSlotId: 0 })
 
 async function load() {
   if (!store.userId) return router.push('/login')
@@ -50,6 +53,33 @@ async function submitReview() {
   load()
 }
 
+async function openModify(order: any) {
+  modifyForm.value = { orderId: order.orderId, serviceId: order.serviceId, date: '', slots: [], selectedSlotId: 0 }
+  modifyDialogVisible.value = true
+}
+
+async function loadModifySlots() {
+  if (!modifyForm.value.date) return
+  try {
+    const res = await slotApi.getAvailable(modifyForm.value.serviceId, modifyForm.value.date)
+    modifyForm.value.slots = res.data.data
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.msg || '加载时段失败')
+  }
+}
+
+async function submitModify() {
+  try {
+    await orderApi.create({ userId: store.userId, slotId: modifyForm.value.selectedSlotId })
+    await orderApi.cancel(modifyForm.value.orderId)
+    ElMessage.success('修改成功')
+    modifyDialogVisible.value = false
+    load()
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.msg || '修改失败')
+  }
+}
+
 const statusMap: Record<string, string> = {
   PENDING: '待支付',
   CONFIRMED: '已确认',
@@ -81,10 +111,11 @@ onMounted(load)
         </template>
       </el-table-column>
       <el-table-column prop="createTime" label="预约时间" width="180" />
-      <el-table-column label="操作" min-width="180">
+      <el-table-column label="操作" min-width="250">
         <template #default="{ row }">
+          <el-button v-if="row.status === 'CONFIRMED'" type="primary" size="small" @click="openModify(row)">修改时间</el-button>
           <el-button v-if="row.status === 'CONFIRMED'" type="danger" size="small" @click="cancel(row.orderId)">取消</el-button>
-          <el-button v-if="row.status === 'CONFIRMED'" type="primary" size="small" @click="openReview(row.orderId)">评价</el-button>
+          <el-button v-if="row.status === 'COMPLETED'" type="primary" size="small" @click="openReview(row.orderId)">评价</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -99,6 +130,32 @@ onMounted(load)
     <template #footer>
       <el-button @click="dialogVisible = false">取消</el-button>
       <el-button type="primary" @click="submitReview">提交</el-button>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="modifyDialogVisible" title="修改预约时间" width="500px">
+    <el-form :model="modifyForm" label-width="80px">
+      <el-form-item label="选择日期">
+        <el-date-picker v-model="modifyForm.date" type="date" placeholder="选择日期"
+          value-format="YYYY-MM-DD" @change="loadModifySlots" style="width: 100%" />
+      </el-form-item>
+      <el-form-item label="选择时段">
+        <el-radio-group v-model="modifyForm.selectedSlotId" v-if="modifyForm.slots.length">
+          <el-button
+            v-for="s in modifyForm.slots" :key="s.slotId"
+            type="primary" plain
+            @click="modifyForm.selectedSlotId = s.slotId"
+            :class="{ 'is-active': modifyForm.selectedSlotId === s.slotId }"
+          >
+            {{ s.startTime }} - {{ s.endTime }}
+          </el-button>
+        </el-radio-group>
+        <el-empty v-else-if="modifyForm.date" description="该日期暂无可用时段" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="modifyDialogVisible = false">取消</el-button>
+      <el-button type="primary" @click="submitModify" :disabled="!modifyForm.selectedSlotId">确认修改</el-button>
     </template>
   </el-dialog>
 </template>

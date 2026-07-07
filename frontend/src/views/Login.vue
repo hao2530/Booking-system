@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { userApi } from '../api'
 import { useUserStore } from '../stores/user'
@@ -7,8 +7,18 @@ import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const store = useUserStore()
-const form = ref({ username: '', password: '', role: 'USER' })
+const form = ref({ username: '', password: '', role: 'USER', rememberMe: false })
 const loading = ref(false)
+
+onMounted(() => {
+  const saved = localStorage.getItem('rememberedUser')
+  if (saved) {
+    const data = JSON.parse(saved)
+    form.value.username = data.username
+    form.value.password = data.password
+    form.value.rememberMe = true
+  }
+})
 
 async function login() {
   loading.value = true
@@ -16,6 +26,16 @@ async function login() {
     const res = await userApi.login(form.value)
     const d = res.data.data
     store.setUser(d.token, d.userId, d.username, d.role)
+    
+    if (form.value.rememberMe) {
+      localStorage.setItem('rememberedUser', JSON.stringify({
+        username: form.value.username,
+        password: form.value.password
+      }))
+    } else {
+      localStorage.removeItem('rememberedUser')
+    }
+    
     ElMessage.success('登录成功')
     if (d.role === 'ADMIN') router.push('/admin')
     else if (d.role === 'PROVIDER') router.push('/provider/dashboard')
@@ -39,11 +59,14 @@ async function login() {
             <el-radio value="ADMIN">管理员</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="用户名">
-          <el-input v-model="form.username" placeholder="请输入用户名" />
+        <el-form-item label="用户名/邮箱">
+          <el-input v-model="form.username" placeholder="请输入用户名或邮箱" />
         </el-form-item>
         <el-form-item label="密码">
           <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" />
+        </el-form-item>
+        <el-form-item>
+          <el-checkbox v-model="form.rememberMe">记住密码</el-checkbox>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="loading" @click="login" style="width: 100%">登录</el-button>

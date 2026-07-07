@@ -41,6 +41,10 @@ function logout() {
             <el-icon><Calendar /></el-icon>
             <span>我的预约</span>
           </el-menu-item>
+          <el-menu-item index="/my-favorites">
+            <el-icon><Star /></el-icon>
+            <span>我的收藏</span>
+          </el-menu-item>
           <el-sub-menu index="provider">
             <template #title>
               <el-icon><Shop /></el-icon>

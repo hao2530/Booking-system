@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { serviceApi, slotApi, orderApi, reviewApi } from '../api'
+import { serviceApi, slotApi, orderApi, reviewApi, favoriteApi } from '../api'
 import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
 
@@ -14,6 +14,7 @@ const selectedDate = ref('')
 const reviews = ref<any[]>([])
 const loading = ref(false)
 const booking = ref(false)
+const isFavorite = ref(false)
 
 async function load() {
   const id = Number(route.params.id)
@@ -21,6 +22,11 @@ async function load() {
   service.value = res.data.data.list.find((s: any) => s.serviceId === id) || {}
   const r = await reviewApi.byService(id)
   reviews.value = r.data.data
+  
+  if (store.userId) {
+    const favRes = await favoriteApi.check(store.userId, id)
+    isFavorite.value = favRes.data.data.isFavorite
+  }
 }
 
 async function loadSlots() {
@@ -49,6 +55,23 @@ async function book(slotId: number) {
   }
 }
 
+async function toggleFavorite() {
+  if (!store.userId) return router.push('/login')
+  try {
+    if (isFavorite.value) {
+      await favoriteApi.remove(store.userId, service.value.serviceId)
+      isFavorite.value = false
+      ElMessage.success('已取消收藏')
+    } else {
+      await favoriteApi.add(store.userId, service.value.serviceId)
+      isFavorite.value = true
+      ElMessage.success('收藏成功')
+    }
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.msg || '操作失败')
+  }
+}
+
 onMounted(load)
 </script>
 
@@ -57,7 +80,17 @@ onMounted(load)
     <template #header>
       <div style="display: flex; justify-content: space-between; align-items: center">
         <h2 style="margin: 0">{{ service.title }}</h2>
-        <el-tag type="success">{{ service.category }}</el-tag>
+        <div style="display: flex; gap: 8px">
+          <el-tag type="success">{{ service.category }}</el-tag>
+          <el-button 
+            type="primary" 
+            :icon="isFavorite ? 'StarFilled' : 'Star'"
+            :text="isFavorite"
+            @click="toggleFavorite"
+          >
+            {{ isFavorite ? '已收藏' : '收藏' }}
+          </el-button>
+        </div>
       </div>
     </template>
 

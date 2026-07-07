@@ -57,8 +57,9 @@ public class ServiceController {
     public R<Map<String, Object>> search(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return R.ok(serviceService.search(keyword, category, page, size));
+        return R.ok(serviceService.search(keyword, category, sort, page, size));
     }
 }

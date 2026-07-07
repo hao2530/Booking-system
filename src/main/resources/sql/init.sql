@@ -83,3 +83,13 @@ CREATE TABLE biz_notification (
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES sys_user(user_id)
 );
+
+CREATE TABLE sys_favorite (
+    favorite_id   INT AUTO_INCREMENT PRIMARY KEY,
+    user_id       INT NOT NULL,
+    service_id    INT NOT NULL,
+    create_time   DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES sys_user(user_id),
+    FOREIGN KEY (service_id) REFERENCES biz_service(service_id),
+    UNIQUE KEY uk_user_service (user_id, service_id)
+);

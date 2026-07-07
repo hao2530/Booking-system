@@ -54,7 +54,10 @@ public class UserService {
     }
 
     public Map<String, Object> login(String username, String password, String role) {
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>().eq(User::getUsername, username);
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
+                .eq(User::getUsername, username)
+                .or()
+                .eq(User::getEmail, username);
         if (role != null && !role.isEmpty()) {
             wrapper.eq(User::getRole, role);
         }

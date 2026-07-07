@@ -59,3 +59,10 @@ export const notificationApi = {
   my: (userId: number) => api.get('/notifications/my', { params: { userId } }),
   markRead: (id: number) => api.put(`/notifications/${id}/read`),
 }
+
+export const favoriteApi = {
+  add: (userId: number, serviceId: number) => api.post('/favorites', { userId, serviceId }),
+  remove: (userId: number, serviceId: number) => api.delete('/favorites', { data: { userId, serviceId } }),
+  check: (userId: number, serviceId: number) => api.get('/favorites/check', { params: { userId, serviceId } }),
+  my: (userId: number) => api.get('/favorites/my', { params: { userId } }),
+}
