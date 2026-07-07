@@ -1,9 +1,5 @@
-CREATE DATABASE IF NOT EXISTS booking_system DEFAULT CHARACTER SET utf8mb4;
-
-USE booking_system;
-
-DROP TABLE IF EXISTS biz_order;
 DROP TABLE IF EXISTS biz_review;
+DROP TABLE IF EXISTS biz_order;
 DROP TABLE IF EXISTS biz_schedule_slot;
 DROP TABLE IF EXISTS biz_service;
 DROP TABLE IF EXISTS sys_provider;
@@ -24,7 +20,7 @@ CREATE TABLE sys_provider (
     company_name VARCHAR(100) NOT NULL,
     category     VARCHAR(50),
     rating       DECIMAL(3,2) DEFAULT 5.00,
-    status       TINYINT      DEFAULT 1,
+    status       INT          DEFAULT 1,
     FOREIGN KEY (user_id) REFERENCES sys_user(user_id)
 );
 
@@ -45,7 +41,7 @@ CREATE TABLE biz_schedule_slot (
     slot_date    DATE NOT NULL,
     start_time   TIME NOT NULL,
     end_time     TIME NOT NULL,
-    is_available TINYINT DEFAULT 1,
+    is_available INT  DEFAULT 1,
     FOREIGN KEY (service_id) REFERENCES biz_service(service_id)
 );
 
