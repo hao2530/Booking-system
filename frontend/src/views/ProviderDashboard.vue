@@ -115,6 +115,22 @@ onMounted(loadProvider)
     <router-view />
   </div>
 
+  <div v-else-if="provider.status === 0">
+    <el-result icon="info" title="审核中" sub-title="您的服务商申请正在等待管理员审核，请耐心等待">
+      <template #extra>
+        <el-tag type="warning" size="large">待审核</el-tag>
+      </template>
+    </el-result>
+  </div>
+
+  <div v-else-if="provider.status === 2">
+    <el-result icon="error" title="审核未通过" sub-title="您的服务商申请已被拒绝，请联系管理员">
+      <template #extra>
+        <el-tag type="danger" size="large">已拒绝</el-tag>
+      </template>
+    </el-result>
+  </div>
+
   <div v-else>
     <el-card style="margin-bottom: 16px">
       <el-descriptions :column="4">

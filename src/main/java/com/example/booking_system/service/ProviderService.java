@@ -39,9 +39,6 @@ public class ProviderService {
         provider.setStatus(0);
         providerMapper.insert(provider);
 
-        user.setRole("PROVIDER");
-        userMapper.updateById(user);
-
         Map<String, Object> result = new HashMap<>();
         result.put("providerId", provider.getProviderId());
         result.put("companyName", provider.getCompanyName());
@@ -94,6 +91,13 @@ public class ProviderService {
         if (provider == null) throw new RuntimeException("服务商不存在");
         provider.setStatus(status);
         providerMapper.updateById(provider);
+        if (status == 1) {
+            User user = userMapper.selectById(provider.getUserId());
+            if (user != null) {
+                user.setRole("PROVIDER");
+                userMapper.updateById(user);
+            }
+        }
     }
 
     public void delete(Integer providerId) {
