@@ -14,9 +14,11 @@ async function login() {
   loading.value = true
   try {
     const res = await userApi.login(form.value)
-    store.setUser(res.data.data.token, res.data.data.userId, res.data.data.username)
+    const d = res.data.data
+    store.setUser(d.token, d.userId, d.username, d.role)
     ElMessage.success('登录成功')
-    router.push('/services')
+    if (d.role === 'ADMIN') router.push('/admin')
+    else router.push('/services')
   } catch (e: any) {
     ElMessage.error(e.response?.data?.msg || '登录失败')
   } finally {

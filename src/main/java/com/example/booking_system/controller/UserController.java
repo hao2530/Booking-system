@@ -21,7 +21,9 @@ public class UserController {
         return R.ok(userService.register(
                 req.get("username"),
                 req.get("password"),
-                req.get("phone")
+                req.get("phone"),
+                req.get("role"),
+                req.get("adminKey")
         ));
     }
 

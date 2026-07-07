@@ -16,21 +16,26 @@ public class UserService {
     private final UserMapper userMapper;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final String adminSecretKey = "Admin888";
 
     public UserService(UserMapper userMapper, JwtUtil jwtUtil) {
         this.userMapper = userMapper;
         this.jwtUtil = jwtUtil;
     }
 
-    public Map<String, Object> register(String username, String password, String phone) {
+    public Map<String, Object> register(String username, String password, String phone, String role, String adminKey) {
         if (userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username)) != null) {
             throw new RuntimeException("用户名已存在");
+        }
+        if (role == null || role.isEmpty()) role = "USER";
+        if ("ADMIN".equals(role) && !adminSecretKey.equals(adminKey)) {
+            throw new RuntimeException("管理员密钥错误");
         }
         User user = new User();
         user.setUsername(username);
         user.setPassword(encoder.encode(password));
         user.setPhone(phone);
-        user.setRole("USER");
+        user.setRole(role);
         userMapper.insert(user);
         String token = jwtUtil.generateToken(user.getUserId(), user.getRole());
         Map<String, Object> result = new HashMap<>();
