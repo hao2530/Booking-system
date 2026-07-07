@@ -42,6 +42,13 @@ export const providerApi = {
   byUser: (userId: number) => api.get(`/providers/by-user/${userId}`),
 }
 
+export const adminApi = {
+  listProviders: () => api.get('/admin/providers'),
+  auditProvider: (id: number, status: number) => api.put(`/admin/providers/${id}/audit?status=${status}`),
+  listSlots: () => api.get('/admin/slots'),
+  deleteSlot: (id: number) => api.delete(`/admin/slots/${id}`),
+}
+
 export const reviewApi = {
   submit: (data: any) => api.post('/reviews', data),
   byService: (serviceId: number) => api.get(`/reviews/by-service/${serviceId}`),

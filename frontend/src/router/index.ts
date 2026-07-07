@@ -11,6 +11,7 @@ const router = createRouter({
     { path: '/my-bookings', name: 'MyBookings', component: () => import('../views/MyBookings.vue') },
     { path: '/provider/register', name: 'ProviderRegister', component: () => import('../views/ProviderRegister.vue') },
     { path: '/provider/dashboard', name: 'ProviderDashboard', component: () => import('../views/ProviderDashboard.vue') },
+    { path: '/admin', name: 'Admin', component: () => import('../views/AdminDashboard.vue') },
   ],
 })
 

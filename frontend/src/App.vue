@@ -45,6 +45,10 @@ function logout() {
           <el-menu-item index="/provider/register">注册为服务商</el-menu-item>
           <el-menu-item index="/provider/dashboard">工作台</el-menu-item>
         </el-sub-menu>
+        <el-menu-item index="/admin">
+          <el-icon><Setting /></el-icon>
+          <span>管理后台</span>
+        </el-menu-item>
         <el-menu-item v-if="!store.userId" index="/login">
           <el-icon><User /></el-icon>
           <span>登录</span>

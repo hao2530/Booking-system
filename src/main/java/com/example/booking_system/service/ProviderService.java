@@ -8,7 +8,9 @@ import com.example.booking_system.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ProviderService {
@@ -34,7 +36,7 @@ public class ProviderService {
         provider.setCompanyName(companyName);
         provider.setCategory(category);
         provider.setRating(java.math.BigDecimal.valueOf(5.00));
-        provider.setStatus(1);
+        provider.setStatus(0);
         providerMapper.insert(provider);
 
         user.setRole("PROVIDER");
@@ -69,6 +71,28 @@ public class ProviderService {
         result.put("companyName", provider.getCompanyName());
         result.put("category", provider.getCategory());
         result.put("rating", provider.getRating());
+        result.put("status", provider.getStatus());
         return result;
+    }
+
+    public List<Map<String, Object>> listAll() {
+        return providerMapper.selectList(null).stream().map(p -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("providerId", p.getProviderId());
+            m.put("companyName", p.getCompanyName());
+            m.put("category", p.getCategory());
+            m.put("rating", p.getRating());
+            m.put("status", p.getStatus());
+            User u = userMapper.selectById(p.getUserId());
+            m.put("username", u != null ? u.getUsername() : "未知");
+            return m;
+        }).collect(Collectors.toList());
+    }
+
+    public void audit(Integer providerId, Integer status) {
+        Provider provider = providerMapper.selectById(providerId);
+        if (provider == null) throw new RuntimeException("服务商不存在");
+        provider.setStatus(status);
+        providerMapper.updateById(provider);
     }
 }
