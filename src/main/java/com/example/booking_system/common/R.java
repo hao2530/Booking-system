@@ -1,8 +1,5 @@
 package com.example.booking_system.common;
 
-import lombok.Data;
-
-@Data
 public class R<T> {
     private int code;
     private String msg;
@@ -30,4 +27,11 @@ public class R<T> {
     public static <T> R<T> error(String msg) {
         return error(500, msg);
     }
+
+    public int getCode() { return code; }
+    public void setCode(int code) { this.code = code; }
+    public String getMsg() { return msg; }
+    public void setMsg(String msg) { this.msg = msg; }
+    public T getData() { return data; }
+    public void setData(T data) { this.data = data; }
 }
