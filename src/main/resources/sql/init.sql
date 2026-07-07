@@ -18,6 +18,9 @@ CREATE TABLE sys_user (
 
 ALTER TABLE IF EXISTS sys_user ADD COLUMN IF NOT EXISTS email VARCHAR(100) UNIQUE;
 
+INSERT INTO sys_user (username, password, phone, email, role) VALUES 
+('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMye.IjzqAKL9xL5jvMFVdNJHvGCgTq/VEq', NULL, 'admin@example.com', 'ADMIN');
+
 CREATE TABLE sys_provider (
     provider_id  INT         AUTO_INCREMENT PRIMARY KEY,
     user_id      INT         UNIQUE,
