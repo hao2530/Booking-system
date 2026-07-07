@@ -22,6 +22,7 @@ public class UserController {
                 req.get("username"),
                 req.get("password"),
                 req.get("phone"),
+                req.get("email"),
                 req.get("role"),
                 req.get("adminKey")
         ));
@@ -31,7 +32,8 @@ public class UserController {
     public R<Map<String, Object>> login(@RequestBody Map<String, String> req) {
         return R.ok(userService.login(
                 req.get("username"),
-                req.get("password")
+                req.get("password"),
+                req.get("role")
         ));
     }
 }

@@ -11,6 +11,7 @@ CREATE TABLE sys_user (
     username    VARCHAR(50)  NOT NULL,
     password    VARCHAR(255) NOT NULL,
     phone       VARCHAR(20)  UNIQUE,
+    email       VARCHAR(100) UNIQUE,
     role        VARCHAR(20)  DEFAULT 'USER',
     create_time DATETIME     DEFAULT CURRENT_TIMESTAMP
 );

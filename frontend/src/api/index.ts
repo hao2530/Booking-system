@@ -45,6 +45,7 @@ export const providerApi = {
 export const adminApi = {
   listProviders: () => api.get('/admin/providers'),
   auditProvider: (id: number, status: number) => api.put(`/admin/providers/${id}/audit?status=${status}`),
+  deleteProvider: (id: number) => api.delete(`/admin/providers/${id}`),
   listSlots: () => api.get('/admin/slots'),
   deleteSlot: (id: number) => api.delete(`/admin/slots/${id}`),
 }

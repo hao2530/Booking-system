@@ -7,7 +7,7 @@ import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const store = useUserStore()
-const form = ref({ username: '', password: '' })
+const form = ref({ username: '', password: '', role: 'USER' })
 const loading = ref(false)
 
 async function login() {
@@ -18,6 +18,7 @@ async function login() {
     store.setUser(d.token, d.userId, d.username, d.role)
     ElMessage.success('登录成功')
     if (d.role === 'ADMIN') router.push('/admin')
+    else if (d.role === 'PROVIDER') router.push('/provider/dashboard')
     else router.push('/services')
   } catch (e: any) {
     ElMessage.error(e.response?.data?.msg || '登录失败')
@@ -29,14 +30,20 @@ async function login() {
 
 <template>
   <div style="display: flex; justify-content: center; padding-top: 80px">
-    <el-card style="width: 420px">
+    <el-card style="width: 460px">
       <template #header><h2 style="text-align: center; margin: 0">登录</h2></template>
-      <el-form :model="form" label-width="60px" @keyup.enter="login">
+      <el-form :model="form" label-width="100px" @keyup.enter="login">
+        <el-form-item label="角色">
+          <el-radio-group v-model="form.role">
+            <el-radio value="USER">用户</el-radio>
+            <el-radio value="ADMIN">管理员</el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="用户名">
-          <el-input v-model="form.username" />
+          <el-input v-model="form.username" placeholder="请输入用户名" />
         </el-form-item>
         <el-form-item label="密码">
-          <el-input v-model="form.password" type="password" show-password />
+          <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="loading" @click="login" style="width: 100%">登录</el-button>
