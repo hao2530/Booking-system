@@ -3,38 +3,46 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { userApi } from '../api'
 import { useUserStore } from '../stores/user'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const store = useUserStore()
-const username = ref('')
-const password = ref('')
-const error = ref('')
+const form = ref({ username: '', password: '' })
+const loading = ref(false)
 
 async function login() {
+  loading.value = true
   try {
-    const res = await userApi.login({ username: username.value, password: password.value })
+    const res = await userApi.login(form.value)
     store.setUser(res.data.data.token, res.data.data.userId, res.data.data.username)
+    ElMessage.success('登录成功')
     router.push('/services')
   } catch (e: any) {
-    error.value = e.response?.data?.msg || '登录失败'
+    ElMessage.error(e.response?.data?.msg || '登录失败')
+  } finally {
+    loading.value = false
   }
 }
 </script>
 
 <template>
-  <div class="page">
-    <h2>登录</h2>
-    <input v-model="username" placeholder="用户名" />
-    <input v-model="password" type="password" placeholder="密码" />
-    <p v-if="error" class="error">{{ error }}</p>
-    <button @click="login">登录</button>
-    <router-link to="/register">没有账号？注册</router-link>
+  <div style="display: flex; justify-content: center; padding-top: 80px">
+    <el-card style="width: 420px">
+      <template #header><h2 style="text-align: center; margin: 0">登录</h2></template>
+      <el-form :model="form" label-width="60px" @keyup.enter="login">
+        <el-form-item label="用户名">
+          <el-input v-model="form.username" />
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input v-model="form.password" type="password" show-password />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="loading" @click="login" style="width: 100%">登录</el-button>
+        </el-form-item>
+      </el-form>
+      <div style="text-align: center">
+        <router-link to="/register" style="color: #409eff">没有账号？去注册</router-link>
+      </div>
+    </el-card>
   </div>
 </template>
-
-<style scoped>
-.page { max-width: 400px; margin: 50px auto; display: flex; flex-direction: column; gap: 12px; }
-input { padding: 10px; font-size: 16px; }
-button { padding: 10px; background: #42b883; color: #fff; border: none; cursor: pointer; }
-.error { color: red; }
-</style>

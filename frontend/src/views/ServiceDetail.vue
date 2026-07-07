@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { serviceApi, slotApi, orderApi, reviewApi } from '../api'
 import { useUserStore } from '../stores/user'
+import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
@@ -11,6 +12,8 @@ const service = ref<any>({})
 const slots = ref<any[]>([])
 const selectedDate = ref('')
 const reviews = ref<any[]>([])
+const loading = ref(false)
+const booking = ref(false)
 
 async function load() {
   const id = Number(route.params.id)
@@ -22,19 +25,27 @@ async function load() {
 
 async function loadSlots() {
   if (!selectedDate.value) return
-  const res = await slotApi.getAvailable(service.value.serviceId, selectedDate.value)
-  slots.value = res.data.data
+  loading.value = true
+  try {
+    const res = await slotApi.getAvailable(service.value.serviceId, selectedDate.value)
+    slots.value = res.data.data
+  } finally {
+    loading.value = false
+  }
 }
 
 async function book(slotId: number) {
   if (!store.userId) return router.push('/login')
+  booking.value = true
   try {
     await orderApi.create({ userId: store.userId, slotId })
-    alert('预约成功！')
+    ElMessage.success('预约成功！')
     selectedDate.value = ''
     slots.value = []
   } catch (e: any) {
-    alert(e.response?.data?.msg || '预约失败')
+    ElMessage.error(e.response?.data?.msg || '预约失败')
+  } finally {
+    booking.value = false
   }
 }
 
@@ -42,33 +53,52 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="page">
-    <h2>{{ service.title }}</h2>
-    <p>价格: ¥{{ service.price }} | 时长: {{ service.durationMin }}分钟 | 分类: {{ service.category }}</p>
+  <el-card>
+    <template #header>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <h2 style="margin: 0">{{ service.title }}</h2>
+        <el-tag type="success">{{ service.category }}</el-tag>
+      </div>
+    </template>
 
-    <h3>选择日期</h3>
-    <input type="date" v-model="selectedDate" @change="loadSlots" />
+    <el-descriptions :column="3" border>
+      <el-descriptions-item label="价格">
+        <span style="color: #f56c6c; font-size: 20px; font-weight: bold">¥{{ service.price }}</span>
+      </el-descriptions-item>
+      <el-descriptions-item label="时长">{{ service.durationMin }} 分钟</el-descriptions-item>
+      <el-descriptions-item label="服务商ID">{{ service.providerId }}</el-descriptions-item>
+    </el-descriptions>
 
-    <div v-if="slots.length" class="slots">
-      <button v-for="s in slots" :key="s.slotId" @click="book(s.slotId)" class="slot-btn">
-        {{ s.startTime }} - {{ s.endTime }}
-      </button>
+    <el-divider />
+
+    <h3>选择日期预约</h3>
+    <el-date-picker v-model="selectedDate" type="date" placeholder="选择日期"
+      value-format="YYYY-MM-DD" @change="loadSlots" style="width: 200px" />
+
+    <div v-loading="loading" style="margin-top: 16px; min-height: 50px">
+      <el-radio-group v-model="selectedDate" v-if="slots.length" style="display: flex; flex-wrap: wrap; gap: 8px">
+        <el-button
+          v-for="s in slots" :key="s.slotId"
+          type="primary" plain
+          :loading="booking"
+          @click="book(s.slotId)"
+        >
+          {{ s.startTime }} - {{ s.endTime }}
+        </el-button>
+      </el-radio-group>
+      <el-empty v-else-if="selectedDate" description="该日期暂无可用时段" />
     </div>
-    <p v-else-if="selectedDate">该日期暂无可用时段</p>
 
-    <h3>评价</h3>
-    <div v-for="r in reviews" :key="r.reviewId" class="review">
-      <strong>{{ '★'.repeat(r.rating) }}</strong>
-      <p>{{ r.comment }}</p>
-      <small>{{ r.createdAt }}</small>
+    <el-divider />
+
+    <h3>用户评价</h3>
+    <div v-if="reviews.length">
+      <div v-for="r in reviews" :key="r.reviewId" style="border-bottom: 1px solid #eee; padding: 12px 0">
+        <el-rate v-model="r.rating" disabled show-score text-color="#ff9900" score-template="{value}" />
+        <p style="margin: 4px 0">{{ r.comment }}</p>
+        <small style="color: #909399">{{ r.createdAt }}</small>
+      </div>
     </div>
-    <p v-if="!reviews.length">暂无评价</p>
-  </div>
+    <el-empty v-else description="暂无评价" />
+  </el-card>
 </template>
-
-<style scoped>
-.page { max-width: 600px; margin: 0 auto; padding: 20px; }
-.slots { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
-.slot-btn { padding: 8px 16px; background: #42b883; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
-.review { border-bottom: 1px solid #eee; padding: 8px 0; }
-</style>

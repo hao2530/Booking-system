@@ -1,41 +1,51 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { serviceApi } from '../api'
 
+const router = useRouter()
 const services = ref<any[]>([])
 const keyword = ref('')
+const loading = ref(false)
 
 async function search() {
-  const res = await serviceApi.search({ keyword: keyword.value, page: 1, size: 20 })
-  services.value = res.data.data.list
+  loading.value = true
+  try {
+    const res = await serviceApi.search({ keyword: keyword.value, page: 1, size: 100 })
+    services.value = res.data.data.list
+  } finally {
+    loading.value = false
+  }
 }
 
 onMounted(search)
 </script>
 
 <template>
-  <div class="page">
-    <h2>服务列表</h2>
-    <div class="search-bar">
-      <input v-model="keyword" placeholder="搜索服务..." @keyup.enter="search" />
-      <button @click="search">搜索</button>
-    </div>
-    <div class="grid">
-      <div v-for="s in services" :key="s.serviceId" class="card" @click="$router.push(`/services/${s.serviceId}`)">
-        <h3>{{ s.title }}</h3>
-        <p>¥{{ s.price }} · {{ s.durationMin }}分钟</p>
-        <span class="tag">{{ s.category }}</span>
-      </div>
-    </div>
+  <div>
+    <el-card style="margin-bottom: 16px">
+      <el-row :gutter="12">
+        <el-col :span="8">
+          <el-input v-model="keyword" placeholder="搜索服务名称..." clearable @keyup.enter="search" />
+        </el-col>
+        <el-col :span="4">
+          <el-button type="primary" @click="search" :loading="loading">
+            <el-icon style="margin-right: 4px"><Search /></el-icon>搜索
+          </el-button>
+        </el-col>
+      </el-row>
+    </el-card>
+
+    <el-row :gutter="16" v-loading="loading">
+      <el-col :span="6" v-for="s in services" :key="s.serviceId" style="margin-bottom: 16px">
+        <el-card shadow="hover" style="cursor: pointer" @click="router.push(`/services/${s.serviceId}`)">
+          <h3 style="margin: 0 0 8px">{{ s.title }}</h3>
+          <p style="margin: 4px 0; color: #f56c6c; font-size: 18px; font-weight: bold">¥{{ s.price }}</p>
+          <p style="margin: 4px 0; color: #909399; font-size: 13px">{{ s.durationMin }} 分钟</p>
+          <el-tag size="small" type="success">{{ s.category }}</el-tag>
+        </el-card>
+      </el-col>
+      <el-empty v-if="!services.length && !loading" description="暂无服务" style="width: 100%" />
+    </el-row>
   </div>
 </template>
-
-<style scoped>
-.page { max-width: 800px; margin: 0 auto; padding: 20px; }
-.search-bar { display: flex; gap: 8px; margin-bottom: 20px; }
-.search-bar input { flex: 1; padding: 10px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
-.card { border: 1px solid #ddd; padding: 16px; border-radius: 8px; cursor: pointer; }
-.card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.1); }
-.tag { background: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
-</style>

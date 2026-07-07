@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { useUserStore } from './stores/user'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const store = useUserStore()
 const router = useRouter()
+const route = useRoute()
+
+function handleSelect(index: string) {
+  router.push(index)
+}
 
 function logout() {
   store.logout()
@@ -12,18 +17,52 @@ function logout() {
 </script>
 
 <template>
-  <div id="nav">
-    <router-link to="/services">服务</router-link>
-    <router-link to="/my-bookings" v-if="store.userId">我的预约</router-link>
-    <span v-if="store.username">你好, {{ store.username }}</span>
-    <router-link to="/login" v-if="!store.userId">登录</router-link>
-    <a href="#" v-else @click.prevent="logout">退出</a>
-  </div>
-  <router-view />
+  <el-container style="min-height: 100vh">
+    <el-aside width="200px" style="background: #304156">
+      <div style="height: 60px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,.1)">
+        在线预约系统
+      </div>
+      <el-menu
+        :default-active="route.path"
+        background-color="#304156"
+        text-color="#bfcbd9"
+        active-text-color="#409eff"
+        @select="handleSelect"
+      >
+        <el-menu-item index="/services">
+          <el-icon><Search /></el-icon>
+          <span>服务浏览</span>
+        </el-menu-item>
+        <el-menu-item index="/my-bookings" v-if="store.userId">
+          <el-icon><Calendar /></el-icon>
+          <span>我的预约</span>
+        </el-menu-item>
+        <el-menu-item v-if="!store.userId" index="/login">
+          <el-icon><User /></el-icon>
+          <span>登录</span>
+        </el-menu-item>
+      </el-menu>
+    </el-aside>
+    <el-container>
+      <el-header style="background: #fff; border-bottom: 1px solid #e6e6e6; display: flex; align-items: center; justify-content: flex-end; padding: 0 20px">
+        <template v-if="store.username">
+          <span style="margin-right: 16px">你好，{{ store.username }}</span>
+          <el-button type="danger" size="small" @click="logout">退出</el-button>
+        </template>
+        <template v-else>
+          <el-button type="primary" size="small" @click="router.push('/login')">登录</el-button>
+          <el-button size="small" @click="router.push('/register')" style="margin-left: 8px">注册</el-button>
+        </template>
+      </el-header>
+      <el-main style="background: #f0f2f5; padding: 20px">
+        <router-view />
+      </el-main>
+    </el-container>
+  </el-container>
 </template>
 
 <style>
-#nav { display: flex; gap: 16px; align-items: center; padding: 12px 20px; background: #f5f5f5; border-bottom: 1px solid #ddd; }
-#nav a { text-decoration: none; color: #333; }
-#nav a:hover { color: #42b883; }
+body { margin: 0; font-family: -apple-system, 'Helvetica Neue', sans-serif; }
+.el-menu { border-right: none; }
+.el-aside { overflow: hidden; }
 </style>

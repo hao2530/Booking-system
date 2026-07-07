@@ -3,40 +3,49 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { userApi } from '../api'
 import { useUserStore } from '../stores/user'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const store = useUserStore()
-const username = ref('')
-const password = ref('')
-const phone = ref('')
-const error = ref('')
+const form = ref({ username: '', password: '', phone: '' })
+const loading = ref(false)
 
 async function register() {
+  loading.value = true
   try {
-    const res = await userApi.register({ username: username.value, password: password.value, phone: phone.value })
+    const res = await userApi.register(form.value)
     store.setUser(res.data.data.token, res.data.data.userId, res.data.data.username)
+    ElMessage.success('注册成功')
     router.push('/services')
   } catch (e: any) {
-    error.value = e.response?.data?.msg || '注册失败'
+    ElMessage.error(e.response?.data?.msg || '注册失败')
+  } finally {
+    loading.value = false
   }
 }
 </script>
 
 <template>
-  <div class="page">
-    <h2>注册</h2>
-    <input v-model="username" placeholder="用户名" />
-    <input v-model="password" type="password" placeholder="密码" />
-    <input v-model="phone" placeholder="手机号" />
-    <p v-if="error" class="error">{{ error }}</p>
-    <button @click="register">注册</button>
-    <router-link to="/login">已有账号？登录</router-link>
+  <div style="display: flex; justify-content: center; padding-top: 80px">
+    <el-card style="width: 420px">
+      <template #header><h2 style="text-align: center; margin: 0">注册</h2></template>
+      <el-form :model="form" label-width="60px" @keyup.enter="register">
+        <el-form-item label="用户名">
+          <el-input v-model="form.username" />
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input v-model="form.password" type="password" show-password />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="form.phone" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="loading" @click="register" style="width: 100%">注册</el-button>
+        </el-form-item>
+      </el-form>
+      <div style="text-align: center">
+        <router-link to="/login" style="color: #409eff">已有账号？去登录</router-link>
+      </div>
+    </el-card>
   </div>
 </template>
-
-<style scoped>
-.page { max-width: 400px; margin: 50px auto; display: flex; flex-direction: column; gap: 12px; }
-input { padding: 10px; font-size: 16px; }
-button { padding: 10px; background: #42b883; color: #fff; border: none; cursor: pointer; }
-.error { color: red; }
-</style>
