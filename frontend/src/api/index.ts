@@ -20,17 +20,26 @@ export const userApi = {
 export const serviceApi = {
   search: (params: any) => api.get('/services/search', { params }),
   byProvider: (id: number) => api.get(`/services/by-provider/${id}`),
+  create: (data: any) => api.post('/services', data),
+  delete: (id: number) => api.delete(`/services/${id}`),
 }
 
 export const slotApi = {
   getAvailable: (serviceId: number, date: string) =>
     api.get('/slots', { params: { serviceId, date } }),
+  generate: (data: any) => api.post('/slots/generate', data),
 }
 
 export const orderApi = {
   create: (data: any) => api.post('/orders', data),
   cancel: (id: number) => api.put(`/orders/${id}/cancel`),
   my: (userId: number) => api.get('/orders/my', { params: { userId } }),
+  providerBookings: (providerId: number) => api.get(`/orders/provider/${providerId}`),
+}
+
+export const providerApi = {
+  register: (data: any) => api.post('/providers/register', data),
+  byUser: (userId: number) => api.get(`/providers/by-user/${userId}`),
 }
 
 export const reviewApi = {

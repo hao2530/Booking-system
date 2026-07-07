@@ -29,4 +29,11 @@ public class ProviderController {
     public R<Map<String, Object>> getProfile(@PathVariable Integer id) {
         return R.ok(providerService.getProfile(id));
     }
+
+    @GetMapping("/by-user/{userId}")
+    public R<Map<String, Object>> getByUserId(@PathVariable Integer userId) {
+        Map<String, Object> result = providerService.getByUserId(userId);
+        if (result == null) return R.error("尚未注册为服务商");
+        return R.ok(result);
+    }
 }

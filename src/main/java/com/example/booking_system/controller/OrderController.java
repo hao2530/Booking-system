@@ -35,4 +35,9 @@ public class OrderController {
     public R<List<Map<String, Object>>> myBookings(@RequestParam Integer userId) {
         return R.ok(orderService.getUserBookings(userId));
     }
+
+    @GetMapping("/provider/{providerId}")
+    public R<List<Map<String, Object>>> providerBookings(@PathVariable Integer providerId) {
+        return R.ok(orderService.getProviderBookings(providerId));
+    }
 }

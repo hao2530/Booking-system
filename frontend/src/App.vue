@@ -37,6 +37,14 @@ function logout() {
           <el-icon><Calendar /></el-icon>
           <span>我的预约</span>
         </el-menu-item>
+        <el-sub-menu index="provider" v-if="store.userId">
+          <template #title>
+            <el-icon><Shop /></el-icon>
+            <span>服务商中心</span>
+          </template>
+          <el-menu-item index="/provider/register">注册为服务商</el-menu-item>
+          <el-menu-item index="/provider/dashboard">工作台</el-menu-item>
+        </el-sub-menu>
         <el-menu-item v-if="!store.userId" index="/login">
           <el-icon><User /></el-icon>
           <span>登录</span>

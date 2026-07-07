@@ -59,4 +59,16 @@ public class ProviderService {
         result.put("status", provider.getStatus());
         return result;
     }
+
+    public Map<String, Object> getByUserId(Integer userId) {
+        Provider provider = providerMapper.selectOne(
+                new LambdaQueryWrapper<Provider>().eq(Provider::getUserId, userId));
+        if (provider == null) return null;
+        Map<String, Object> result = new HashMap<>();
+        result.put("providerId", provider.getProviderId());
+        result.put("companyName", provider.getCompanyName());
+        result.put("category", provider.getCategory());
+        result.put("rating", provider.getRating());
+        return result;
+    }
 }
